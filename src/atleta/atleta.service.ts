@@ -1,26 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAtletaDto } from './dto/create-atleta.dto';
-import { UpdateAtletaDto } from './dto/update-atleta.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Atleta } from './entities/atleta.entity';
 
 @Injectable()
 export class AtletaService {
-  create(createAtletaDto: CreateAtletaDto) {
-    return 'This action adds a new atleta';
+  constructor(
+    @InjectRepository(Atleta)
+    private readonly atletaRepository: Repository<Atleta>,
+  ) {}
+
+  // 🔹 Crear atleta
+  async create(atleta: Partial<Atleta>) {
+    return this.atletaRepository.save(atleta);
   }
 
-  findAll() {
-    return `This action returns all atleta`;
+  // 🔹 Listar todos los atletas (con su ciudad incluida)
+  async findAll() {
+    return this.atletaRepository.find({
+      relations: ['ciudad'],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} atleta`;
+  // 🔹 Buscar un atleta por id (incluye ciudad)
+  async findOne(id: number) {
+    return this.atletaRepository.findOne({
+      where: { Id: id },
+      relations: ['ciudad'],
+    });
   }
 
-  update(id: number, updateAtletaDto: UpdateAtletaDto) {
-    return `This action updates a #${id} atleta`;
+  // 🔹 Actualizar atleta
+  async update(id: number, data: Partial<Atleta>) {
+    await this.atletaRepository.update(id, data);
+    return this.findOne(id); // devolvemos el atleta actualizado
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} atleta`;
+  // 🔹 Eliminar atleta
+  async remove(id: number) {
+    return this.atletaRepository.delete(id);
   }
 }
